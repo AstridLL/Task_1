@@ -39,6 +39,9 @@ Set the working directory (the directory with your data and code for these assig
 
 ```{r}
 
+setwd("~/Desktop/Exp. Met. 3/Task_1")
+
+
 ```
 
 Load the three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -47,6 +50,12 @@ Load the three data sets, after downloading them from dropbox and saving them in
 * Word data: https://www.dropbox.com/s/8ng1civpl2aux58/token_train.csv?dl=0
 
 ```{r}
+
+data_1 = read.csv("~/Desktop/Exp. Met. 3/Task_1/demo_train(1).csv")
+
+data_2 = read.csv("~/Desktop/Exp. Met. 3/Task_1/LU_train.csv")
+
+data_3 = read.csv("~/Desktop/Exp. Met. 3/Task_1/token_train.csv")
 
 ```
 
@@ -65,12 +74,33 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 
 ```{r}
 
+library(plyr)
+
+# re (regular expressions), instead of: replace "1", "2" and so on, just "\\d" choses all digits
+data_1 = rename(data_1, c("Child.ID"="SUBJ", "Visit"="VISIT"))
+
+install.packages("stringr")
+library(stringr)
+data_2$VISIT = str_extract_all(data_2$VISIT,"\\d")
+data_3$VISIT = str_extract_all(data_3$VISIT,"\\d")
+
+data_1$SUBJ = gsub("\\.","",data_1$SUBJ)
+data_2$SUBJ = gsub("\\.","",data_2$SUBJ)
+data_3$SUBJ = gsub("\\.","",data_3$SUBJ)
+
+# data_2 = rename(data_2, c("sdfsd"="we", wefwef))
+
+# data_3 = rename(data_3, c("VISIT"))
 ```
 
 2b. Find a way to homogeneize the way "visit" is reported. If you look into the original data sets, you will see that in the LU data and the Token data, Visits are called "visit 1" in stead of just 1 (which is the case in the demographic data set).
 Tip: There is a package called stringr, which will be very handy for you also in future assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set. Tip: type ?str_extract() after loading the library, for examples of how to use it.
 
 ```{r}
+
+install.packages("tidyverse")
+library("tidyverse")
+
 
 
 ```
@@ -105,6 +135,21 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
+library(tidyr)
+install.packages("tidyverse")
+library(tidyverse)
+library(pacman)
+p_load()
+data_1a= select(data_1, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw)
+
+data_1a
+
+
+
+
+
+
+
 
 
 ```
