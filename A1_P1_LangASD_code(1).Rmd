@@ -40,8 +40,14 @@ Set the working directory (the directory with your data and code for these assig
 ```{r}
 
 setwd("~/Desktop/Exp. Met. 3/Task_1")
+library(plyr)
+library(dplyr)
+library(stringr)
+library(tidyverse)
+library(tidyr)
 
-
+# library(pacman)
+# p_load(plyr, dplyr, stringr, tidyverse, tidyr)
 ```
 
 Load the three data sets, after downloading them from dropbox and saving them in your working directory:
@@ -74,32 +80,27 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 
 ```{r}
 
-library(plyr)
+# CLEAN UP DATA
 
-# re (regular expressions), instead of: replace "1", "2" and so on, just "\\d" choses all digits
+# rename variables so that we can merge the datasets by these columns later 
 data_1 = rename(data_1, c("Child.ID"="SUBJ", "Visit"="VISIT"))
 
-install.packages("stringr")
-library(stringr)
+# re (regular expressions), instead of: replace "1", "2" and so on, just "\\d" choses all digits
+# extract all digits from this column (remove text)
 data_2$VISIT = str_extract_all(data_2$VISIT,"\\d")
 data_3$VISIT = str_extract_all(data_3$VISIT,"\\d")
 
+# remove all "." (dot signs) from SUBJ variable (column)
 data_1$SUBJ = gsub("\\.","",data_1$SUBJ)
 data_2$SUBJ = gsub("\\.","",data_2$SUBJ)
 data_3$SUBJ = gsub("\\.","",data_3$SUBJ)
 
-# data_2 = rename(data_2, c("sdfsd"="we", wefwef))
-
-# data_3 = rename(data_3, c("VISIT"))
 ```
 
 2b. Find a way to homogeneize the way "visit" is reported. If you look into the original data sets, you will see that in the LU data and the Token data, Visits are called "visit 1" in stead of just 1 (which is the case in the demographic data set).
 Tip: There is a package called stringr, which will be very handy for you also in future assignments. We will return to this package later, but for now use the str_extract () to extract only the number from the variable Visit in each data set. Tip: type ?str_extract() after loading the library, for examples of how to use it.
 
 ```{r}
-
-install.packages("tidyverse")
-library("tidyverse")
 
 
 
@@ -135,21 +136,20 @@ The variables we need are: Child.ID, Visit, Ethnicity, Diagnosis, Gender, Age, A
 It would be smart to rename the MullenRaw and ExpressiveLangRaw into something you can remember (i.e. nonVerbalIQ, verbalIQ)
 
 ```{r}
-library(tidyr)
-install.packages("tidyverse")
-library(tidyverse)
-library(pacman)
-p_load()
-data_1a= select(data_1, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, MullenRaw, ExpressiveLangRaw)
 
-data_1a
+# making subsets of the datasets as we only want some of the information from each dataset
+# using tidyverse package to make strings/subsets of the variables, which we can then merge 
 
+# first I will rename some of the variables so they have more intuitive/recognizable names
 
+data_1 = rename(data_1, c("MullenRaw"="Non_verbal_IQ", "ExpressiveLangRaw"="Verbal_IQ"))
 
+# subsets
+data_1a = select(data_1, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, Non_verbal_IQ, Verbal_IQ)
 
+data_2a = select(data_2, SUBJ, VISIT, MOT_MLU, MOT_LUstd)
 
-
-
+data_3a = select(data_3, SUBJ, VISIT, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
 
 
 ```
@@ -161,6 +161,16 @@ Tip: Merge only works for two data frames at the time.
 Tip: Check the number of observations in the datasets before and after merging. What is going on?
 
 ```{r}
+# merge datasets (you can only merge 2 datasets)
+data_1a_2a = merge(data_1a,data_2a,by=c("SUBJ","VISIT"))
+
+# all_data is the final merged data
+all_data = merge(data_1a_2a,data_3a,by=c("SUBJ", "VISIT"))
+
+# If I wanted to merge two data sets by adding rows, I would use the rbind function. 
+# I could for example use this if I had two datasets of the students in respectively class 7.A and 7.B, 
+# but wanted to have a list of all the 7 graders combined.
+# total <- rbind(data frameA, data frameB)
 
 ```
 
@@ -175,6 +185,26 @@ Tip: the final dataset should have as many rows as the the old one.
 
 
 ```{r}
+# removing NA's by repeating values from 1st visit throughout the rest of the visits
+# first I will select the rows corresponding to visit 1 in a subset
+
+data_subset = select(all_data, SUBJ, VISIT, ADOS)
+data_ADOS = subset(data_subset, SUBJ, VISIT == 1, ADOS)
+
+data_ADOS = rename(data_ADOS, c("ADOS"="ADOS_1"))
+
+all_data = merge(all_data,data_ADOS,by="VISIT")
+
+#select(all_data$VISIT, contains("1"))
+#try=all_data[all_data$VISIT == '1',all_data$ADOS]
+#try = all_data[all_data$VISIT==1,all_data$ADOS]
+#temporary_data = ifelse(all_data$VISIT == "1", select, NA))
+
+#NO_NA_ADOS = dataa=Data[Data$Pick_danger == 'White shark', -1]
+
+# no_NA_ADOS = all_data$ADOS[all_data$ADOS == 1]
+
+#data_no_NA = select(all_data, SUBJ, ADOS, Verbal_IO, Non_verbal_IQ$)
 
 ```
 
