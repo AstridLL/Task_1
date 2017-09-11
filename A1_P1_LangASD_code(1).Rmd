@@ -83,7 +83,10 @@ Tip: Look into the package data.table, or google "how to rename variables in R"
 # CLEAN UP DATA
 
 # rename variables so that we can merge the datasets by these columns later 
-data_1 = rename(data_1, c("Child.ID"="SUBJ", "Visit"="VISIT"))
+data_1 = plyr::rename(data_1, c("Child.ID"="SUBJ", "Visit"="VISIT"))
+
+#data_1 = rename(data_1, c("Child.ID" = "SUBJ", "Visit" = "VISIT"))
+# would not run for some reason with the dplyr or plyr library
 
 # re (regular expressions), instead of: replace "1", "2" and so on, just "\\d" choses all digits
 # extract all digits from this column (remove text)
@@ -142,7 +145,7 @@ It would be smart to rename the MullenRaw and ExpressiveLangRaw into something y
 
 # first I will rename some of the variables so they have more intuitive/recognizable names
 
-data_1 = rename(data_1, c("MullenRaw"="Non_verbal_IQ", "ExpressiveLangRaw"="Verbal_IQ"))
+data_1 = plyr::rename(data_1, c("MullenRaw"="Non_verbal_IQ", "ExpressiveLangRaw"="Verbal_IQ"))
 
 # subsets
 data_1a = select(data_1, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, Non_verbal_IQ, Verbal_IQ)
@@ -188,12 +191,22 @@ Tip: the final dataset should have as many rows as the the old one.
 # removing NA's by repeating values from 1st visit throughout the rest of the visits
 # first I will select the rows corresponding to visit 1 in a subset
 
-data_subset = select(all_data, SUBJ, VISIT, ADOS)
-data_ADOS = subset(data_subset, SUBJ, VISIT == 1, ADOS)
 
-data_ADOS = rename(data_ADOS, c("ADOS"="ADOS_1"))
+#data_subset = select(all_data, SUBJ, VISIT, ADOS)
+data_ADOS = select(all_data, SUBJ, VISIT == 1, ADOS)
 
+# subset with all ADOS values from first visit 
+data_ADOS = subset(all_data, VISIT == 1, ADOS)
+data_ADOS = select()
+# rename ADOS
+data_ADOS = plyr::rename(data_ADOS, c("ADOS"="ADOS_1"))
+
+# merge new ADOS variable with all_data dataset
 all_data = merge(all_data,data_ADOS,by="VISIT")
+
+#data_ADOS = rename(data_ADOS, c("ADOS"="ADOS_1"))
+
+#all_data = merge(all_data,data_ADOS,by="VISIT")
 
 #select(all_data$VISIT, contains("1"))
 #try=all_data[all_data$VISIT == '1',all_data$ADOS]
