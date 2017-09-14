@@ -79,6 +79,10 @@ Load necessary libraries : what will you need?
 
 ```{r Load Libraries}
 
+# loading packages
+library(pacman)
+p_load(plyr, dplyr, stringr, tidyverse, tidyr, ggplot2, pastecs, lmerTest)
+
 ```
 
 ### Define your working directory and load the data
@@ -89,11 +93,14 @@ Load necessary libraries : what will you need?
 - Load the data you saved last time (use read_csv(fileName))
 
 ```{r Load Data}
+# setting working directory and loading data
+getwd()
+locpath= getwd()
+setwd(locpath)
+data = read.csv("~/Desktop/Exp. Met. 3/Task_1/Task_1_data.csv")
 
-#getwd()
-#locpath=
-#setwd(locpath)
-#Data =
+
+str(data)
 
 ```
 
@@ -106,6 +113,44 @@ Make sure the variables are in the right format.
 Describe the characteristics of the two groups of participants and whether the two groups are well matched.
 
 ```{r}
+# Exercise 1
+# Characterizing the participants
+
+# subset with observations only from 1st visit
+data_1 = subset(data, data$VISIT == "1")
+
+# AGE
+# lm test (in this case the same as a t-test) 
+age = lm(Age ~ Diagnosis, data = data_1)
+summary(age)
+# barplot
+ggplot(age_data,aes(Diagnosis, Age)) +
+ geom_bar(stat="summary",fun.y=mean)
+
+# ETHNICITY
+# GLM test 
+ethnicity = glm(Diagnosis ~ Ethnicity, family = binomial, data)
+summary(ethnicity)
+# barplot
+ggplot(data_1,aes(Ethnicity, Diagnosis)) +
+ geom_bar(stat="summary",fun.y=mean)
+
+# ETHNICITY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```
 
