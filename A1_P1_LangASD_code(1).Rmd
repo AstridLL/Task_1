@@ -150,7 +150,7 @@ data_1 = plyr::rename(data_1, c("MullenRaw"="Non_verbal_IQ", "ExpressiveLangRaw"
 # subsets
 data_1a = select(data_1, SUBJ, VISIT, Ethnicity, Diagnosis, Gender, Age, ADOS, Non_verbal_IQ, Verbal_IQ)
 
-data_2a = select(data_2, SUBJ, VISIT, MOT_MLU, MOT_LUstd)
+data_2a = select(data_2, SUBJ, VISIT, MOT_MLU, MOT_LUstd, CHI_MLU, CHI_LUstd)
 
 data_3a = select(data_3, SUBJ, VISIT, types_MOT, types_CHI, tokens_MOT, tokens_CHI)
 
@@ -188,36 +188,38 @@ Tip: the final dataset should have as many rows as the the old one.
 
 
 ```{r}
-# removing NA's by repeating values from 1st visit throughout the rest of the visits
-# first I will select the rows corresponding to visit 1 in a subset
 
+# subset with all values from first visit 
+data_ADOS = subset(all_data, all_data$VISIT == 1)
+# subset with only the varibales we want to change
+data_ADOS = select(data_ADOS, SUBJ, ADOS, Verbal_IQ, Non_verbal_IQ)
+# rename variables
+data_ADOS = plyr::rename(data_ADOS, c("ADOS"="ADOS_1","Verbal_IQ" = "Verbal_IQ_1", "Non_verbal_IQ" = "Non_verbal_IQ_1"))
 
-#data_subset = select(all_data, SUBJ, VISIT, ADOS)
-data_ADOS = select(all_data, SUBJ, VISIT == 1, ADOS)
+# merge new variables with all_data dataset
+all_data = merge(all_data,data_ADOS,by="SUBJ")
 
-# subset with all ADOS values from first visit 
-data_ADOS = subset(all_data, VISIT == 1, ADOS)
-data_ADOS = select()
-# rename ADOS
-data_ADOS = plyr::rename(data_ADOS, c("ADOS"="ADOS_1"))
+# remove original ADOS, Verbal_IQ and Non_verbal_IQ variables 
+all_data = subset(all_data, select = - c(ADOS, Verbal_IQ, Non_verbal_IQ))
 
-# merge new ADOS variable with all_data dataset
-all_data = merge(all_data,data_ADOS,by="VISIT")
+ 
+# Anonymizing data
+# if it is a character -> factor -> numeric
+# if it is a factor -> character (to make it forget that it is a factor) -> factor -> numeric
+# in order to see what your variables are use: str(data)
+all_data$SUBJ = as.numeric(as.factor(all_data$SUBJ))
+# alternatively we can use levels: 
+# levels(all_data$SUBJ) = 1:length(levels(all_data$SUBJ))
 
-#data_ADOS = rename(data_ADOS, c("ADOS"="ADOS_1"))
+# tidying the data
+all_data$VISIT = as.numeric(all_data$VISIT)
+all_data$Gender = as.factor(all_data$Gender)
+all_data$Gender = plyr::revalue(all_data$Gender, c("1"="F", "2"="M"))
+all_data$Diagnosis = plyr::revalue(all_data$Diagnosis, c("A"="ASD", "B"="TD"))
 
-#all_data = merge(all_data,data_ADOS,by="VISIT")
+# write to csv file 
+write.csv(all_data, file = "Task_1_data.csv")
 
-#select(all_data$VISIT, contains("1"))
-#try=all_data[all_data$VISIT == '1',all_data$ADOS]
-#try = all_data[all_data$VISIT==1,all_data$ADOS]
-#temporary_data = ifelse(all_data$VISIT == "1", select, NA))
-
-#NO_NA_ADOS = dataa=Data[Data$Pick_danger == 'White shark', -1]
-
-# no_NA_ADOS = all_data$ADOS[all_data$ADOS == 1]
-
-#data_no_NA = select(all_data, SUBJ, ADOS, Verbal_IO, Non_verbal_IQ$)
 
 ```
 
@@ -256,7 +258,23 @@ List all kids who:
 3. have not completed all trials. Tip: Use pipes to solve this
 
 ```{r}
+#Kids who have a mean legth of utterance (across all visits) of more than 2.7 morphemes
+group_by(all_data, SUBJ) %>%
+  summarise(Mean_CHI_MLU = mean(CHI_MLU, na.rm = TRUE)) %>%
+  filter(Mean_CHI_MLU > 2.7)
+# or
+all_data %>% group_by(SUBJ) %>%
+  summarise(Mean_MLU = mean(CHI_MLU, na.rm = TRUE)) %>%
+  filter(Mean_MLU > 2.7)
 
+# make a list of kids who have a mean length of utterance of less than 1.5 morphemes at the first visit
+Kids <- filter(all_data, all_data$CHI_MLU < 1.5 & all_data$VISIT == 1)
+Kids$SUBJ
+length(Kids$SUBJ)
+
+# Kids who have not completed all trials (using pipes)
+??
+...
 
 ```
 
@@ -267,6 +285,15 @@ USING ARRANGE
 2. Sort kids to find the kid who produced the least amount of words on the 1st visit.
 
 ```{r}
+# Tokens are the total amount of words (repetitions of same word included)
+
+# Who produced the most words on the 6th visit?
+all_data$tokens_CHI = as.numeric(all_data$tokens_CHI)
+
+arrange(all_data[all_data$VISIT == 6, ],all_data$tokens_CHI[all_data$VISIT == 6])
+
+# Who produced the least amount of words on the 1st visit?
+arrange(all_data[all_data$VISIT == 1, ],all_data$tokens_CHI[all_data$VISIT == 1])
 
 
 ```
@@ -278,6 +305,14 @@ USING SELECT
 
 ```{r}
 
+# Make a subset only with the kids with ASD, mlu and word tokens 
+ASD_data = subset(all_data, all_data$Diagnosis == "ASD")
+ASD_data = select(ASD_data, CHI_MLU, tokens_CHI)
+
+# what happens if you repeat the variables?
+ASD_data = subset(all_data, all_data$Diagnosis == "ASD")
+ASD_data = select(all_data, SUBJ, SUBJ, CHI_MLU, Diagnosis, SUBJ)
+
 ```
 
 
@@ -287,6 +322,7 @@ USING MUTATE, SUMMARISE and PIPES
 3. The solution to task above enables us to assess the average amount of words produced by each child. Why don't we just use these average values to describe the language production of the children? What is the advantage of keeping all the data?
 
 ```{r}
+# add column representing the average no of words spoken at all/each visit
 
 
 ```
