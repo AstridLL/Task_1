@@ -255,7 +255,6 @@ First build the different models, then compare them to see which one is better
 ```{r}
 
 
-
 ```
 
 Exciting right?
@@ -298,6 +297,23 @@ Your task now is to figure out how to best describe the children linguistic traj
 
 
 ```{r}
+model= lmer(CHI_MLU ~ 1 + VISIT + ADOS_1 + Verbal_IQ_1 + (1 + VISIT | SUBJ), data)
+summary(model)
+r.squaredGLMM(model)
+
+# how to perform well on fitting the data:
+# Use many predictors
+# (you should probably use meaningful predictors)
+
+# in coding language: leakage (information from the outcome is leaking inot the predictors, example: child mlu is probably connected to tokens mlu, because the number of words uttered by the child probably is connected to the mean length of utterances of the child.)
+
+# What is a good predictive model?
+# Verbals that are conceptually relevant (know this from litterature)
+# Even though your model might fit the data, it may not be good at predicting new data (this is the reason behind the replication crisis)
+# If you put two stronly correlated variables in the same model, they explain the same variance. You first check one variable and replace those values with the residuals of that value, and then check the other value and replace that with the residuals of that value. (ex here: ADOS and verbal IQ, strongly correlated - verbal impairment is a symptom of autism, or autism is a symptom of verbal impairment????)
+# verbal IQ is most important: first -> residuals of ADOS, then in the model: MLU~res.ADOS*verbal IQ
+# otherwise: MLU~shared variance+res.ADOS+res.verbal IQ
+
 
 
 

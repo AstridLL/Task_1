@@ -214,7 +214,7 @@ all_data$SUBJ = as.numeric(as.factor(all_data$SUBJ))
 # tidying the data
 all_data$VISIT = as.numeric(all_data$VISIT)
 all_data$Gender = as.factor(all_data$Gender)
-all_data$Gender = plyr::revalue(all_data$Gender, c("1"="F", "2"="M"))
+all_data$Gender = plyr::revalue(all_data$Gender, c("1"="M", "2"="F"))
 all_data$Diagnosis = plyr::revalue(all_data$Diagnosis, c("A"="ASD", "B"="TD"))
 
 # write to csv file 
@@ -294,7 +294,7 @@ arrange(all_data[all_data$VISIT == 6, ],all_data$tokens_CHI[all_data$VISIT == 6]
 
 # Who produced the least amount of words on the 1st visit?
 arrange(all_data[all_data$VISIT == 1, ],all_data$tokens_CHI[all_data$VISIT == 1])
-
+???
 
 ```
 
@@ -323,6 +323,6 @@ USING MUTATE, SUMMARISE and PIPES
 
 ```{r}
 # add column representing the average no of words spoken at all/each visit
-
+???
 
 ```
