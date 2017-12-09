@@ -1,6 +1,6 @@
 ---
 title: "A1_P1_Student"
-author: "Céline Carlsen"
+author: "Astrid Ledager"
 date: "29/8/2017"
 output: html_document
 ---
@@ -259,21 +259,28 @@ List all kids who:
 
 ```{r}
 #Kids who have a mean legth of utterance (across all visits) of more than 2.7 morphemes
-group_by(all_data, SUBJ) %>%
+kids_2.7 = all_data %>% group_by(SUBJ) %>%
   summarise(Mean_CHI_MLU = mean(CHI_MLU, na.rm = TRUE)) %>%
   filter(Mean_CHI_MLU > 2.7)
-# or
-all_data %>% group_by(SUBJ) %>%
-  summarise(Mean_MLU = mean(CHI_MLU, na.rm = TRUE)) %>%
-  filter(Mean_MLU > 2.7)
+
+#kids_2.7_df = data.frame(kids_2.7) # making it into a dataframe (not necessary)
+# group_by(all_data, SUBJ) %>% # can also group people in this way
 
 # make a list of kids who have a mean length of utterance of less than 1.5 morphemes at the first visit
 Kids <- filter(all_data, all_data$CHI_MLU < 1.5 & all_data$VISIT == 1)
-Kids$SUBJ
-length(Kids$SUBJ)
+(Kids$SUBJ)
+length(Kids$SUBJ) # number  of kids with mlu < 1.5 
 
+# with a t in front of data frame you can transpose (arrange the data differently)
+#t.data.frame(name of thing you want to edit)
 # Kids who have not completed all trials (using pipes)
-??
+Kids_w_NA = na.omit(all_data) %>% 
+      group_by(SUBJ) %>% 
+      tally() %>% 
+      filter(n < 6)
+Kids_w_NA
+
+
 ...
 
 ```
@@ -290,11 +297,14 @@ USING ARRANGE
 # Who produced the most words on the 6th visit?
 all_data$tokens_CHI = as.numeric(all_data$tokens_CHI)
 
-arrange(all_data[all_data$VISIT == 6, ],all_data$tokens_CHI[all_data$VISIT == 6])
+arrange(all_data, desc(CHI_MLU)) %>%
+  filter(VISIT == 6)
+# Using desc() makes it give the biggest value first, instead it will automatically print the lowest value if not using desc(). 
 
 # Who produced the least amount of words on the 1st visit?
-arrange(all_data[all_data$VISIT == 1, ],all_data$tokens_CHI[all_data$VISIT == 1])
-???
+arrange(all_data, CHI_MLU) %>%
+  filter(VISIT == 1)
+
 
 ```
 
@@ -312,6 +322,7 @@ ASD_data = select(ASD_data, CHI_MLU, tokens_CHI)
 # what happens if you repeat the variables?
 ASD_data = subset(all_data, all_data$Diagnosis == "ASD")
 ASD_data = select(all_data, SUBJ, SUBJ, CHI_MLU, Diagnosis, SUBJ)
+# there is no difference, it only prints SUBJ once
 
 ```
 
@@ -323,6 +334,17 @@ USING MUTATE, SUMMARISE and PIPES
 
 ```{r}
 # add column representing the average no of words spoken at all/each visit
-???
+
+all_data = mutate(all_data, GrandAvg = mean(tokens_CHI))
+
+# add an column in the data set containing the mean amount of words produced by each trial across all visits 
+ChiAvg_AcrossVisits = all_data %>%
+  group_by(SUBJ) %>%
+  summarise(ChiAvgWord = mean(tokens_CHI))
+
+all_data = merge(all_data, ChiAvg_AcrossVisits)
+
+# The advantage of keeping all of the data is that we get a look on how the children develop over time. We are not just interested in the mean, as it does not tell us enough in detail.	
+
 
 ```

@@ -127,6 +127,7 @@ Describe the characteristics of the two groups of participants and whether the t
 ```{r}
 # Exercise 1
 # Characterizing the participants
+# sd should be small on 
 
 # subset with observations only from 1st visit
 data_1 = subset(data, data$VISIT == "1")
